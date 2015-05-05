@@ -4,7 +4,7 @@ A complete*, easy to use parsing library for GTFS data. Implemented in go. Accep
 
 ## Usage
     feed := gtfsparser.NewFeed()
-    feed.Parse("sample-feed.zip")
+    error := feed.Parse("sample-feed.zip")
     
 See feed.go for exported fields.
 
