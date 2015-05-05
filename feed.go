@@ -7,21 +7,21 @@
 package gtfsparser
 
 import (
-	"github.com/geops/gtfsparser/gtfs"
-	"sort"
-	opath "path"
-	"io"
 	"archive/zip"
-	"os"
 	"errors"
+	"github.com/geops/gtfsparser/gtfs"
+	"io"
+	"os"
+	opath "path"
+	"sort"
 )
 
 type Feed struct {
-	Agencies map[string]*gtfs.Agency
-	Stops    map[string]*gtfs.Stop
-	Routes   map[string]*gtfs.Route
-	Trips    map[string]*gtfs.Trip
-	Services map[string]*gtfs.Service
+	Agencies       map[string]*gtfs.Agency
+	Stops          map[string]*gtfs.Stop
+	Routes         map[string]*gtfs.Route
+	Trips          map[string]*gtfs.Trip
+	Services       map[string]*gtfs.Service
 	FareAttributes map[string]*gtfs.FareAttribute
 
 	zipFileCloser *zip.ReadCloser
@@ -31,11 +31,11 @@ type Feed struct {
 // Create a new, empty feed
 func NewFeed() *Feed {
 	g := Feed{
-		Agencies: make(map[string]*gtfs.Agency),
-		Stops:    make(map[string]*gtfs.Stop),
-		Routes:   make(map[string]*gtfs.Route),
-		Trips:    make(map[string]*gtfs.Trip),
-		Services: make(map[string]*gtfs.Service),
+		Agencies:       make(map[string]*gtfs.Agency),
+		Stops:          make(map[string]*gtfs.Stop),
+		Routes:         make(map[string]*gtfs.Route),
+		Trips:          make(map[string]*gtfs.Trip),
+		Services:       make(map[string]*gtfs.Service),
 		FareAttributes: make(map[string]*gtfs.FareAttribute),
 	}
 	return &g
@@ -98,33 +98,33 @@ func (feed *Feed) Parse(path string) error {
 func (feed *Feed) getFile(path string, name string) (io.Reader, error) {
 	fileInfo, err := os.Stat(path)
 
-    if err != nil {
-    	return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
-    if fileInfo.IsDir() {
-    	if feed.curFileHandle != nil {
-    		// close previous handle
-    		feed.curFileHandle.Close()
-    	}
+	if fileInfo.IsDir() {
+		if feed.curFileHandle != nil {
+			// close previous handle
+			feed.curFileHandle.Close()
+		}
 
-    	return os.Open(opath.Join(path, name))
-    } else {
-    	var e error
-	    if feed.zipFileCloser == nil {
-	    	// reuse existing opened zip file
+		return os.Open(opath.Join(path, name))
+	} else {
+		var e error
+		if feed.zipFileCloser == nil {
+			// reuse existing opened zip file
 			feed.zipFileCloser, e = zip.OpenReader(path)
 		}
 
-	    if e != nil {
-	    	return nil, e
-	    }
+		if e != nil {
+			return nil, e
+		}
 
-	    for _, f := range feed.zipFileCloser.File {
-	        if f.Name == name {
-	        	return f.Open()
-	        }
-	    }
+		for _, f := range feed.zipFileCloser.File {
+			if f.Name == name {
+				return f.Open()
+			}
+		}
 	}
 
 	return nil, errors.New("Not found.")
@@ -322,7 +322,7 @@ func (feed *Feed) parseFareAttributes(path string) error {
 		if e != nil {
 			return ParseError{"todo", reader.Curline, e.Error()}
 		}
-	}	
+	}
 
 	return e
 }
@@ -341,7 +341,7 @@ func (feed *Feed) parseFareAttributeRules(path string) error {
 		if e != nil {
 			return ParseError{"todo", reader.Curline, e.Error()}
 		}
-	}	
+	}
 
 	return e
 }

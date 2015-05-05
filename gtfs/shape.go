@@ -7,13 +7,13 @@
 package gtfs
 
 type Shape struct {
-	Id                  string
-	Points				[]*ShapePoint
+	Id     string
+	Points []*ShapePoint
 }
 
 type ShapePoint struct {
-	Lat                 float32
-	Lon                 float32
-	Sequence 			int
-	Dist_traveled		float32
+	Lat           float32
+	Lon           float32
+	Sequence      int
+	Dist_traveled float32
 }

@@ -7,18 +7,18 @@
 package gtfs
 
 type FareAttribute struct {
-	Id       string
-	Price     string
-	Currency_type      string
-	Payment_method int
-	Transfers     int
-	Transfer_duration    int
-	Rules           []*FareAttributeRule
+	Id                string
+	Price             string
+	Currency_type     string
+	Payment_method    int
+	Transfers         int
+	Transfer_duration int
+	Rules             []*FareAttributeRule
 }
 
 type FareAttributeRule struct {
-	Route *Route
-	Origin_id string  		// connection to Zone_id in Stop
-	Destination_id string 	// connection to Zone_id in Stop
-	Contains_id string  	// connection to Zone_id in Stop
+	Route          *Route
+	Origin_id      string // connection to Zone_id in Stop
+	Destination_id string // connection to Zone_id in Stop
+	Contains_id    string // connection to Zone_id in Stop
 }

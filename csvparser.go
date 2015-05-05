@@ -12,13 +12,13 @@ import (
 )
 
 type CsvParser struct {
-	header  []string
-	reader  *csv.Reader
+	header   []string
+	reader   *csv.Reader
 	filename string
-	Curline int
+	Curline  int
 }
 
-func NewCsvParser(file io.Reader) (CsvParser) {
+func NewCsvParser(file io.Reader) CsvParser {
 	reader := csv.NewReader(file)
 	reader.TrimLeadingSpace = true
 	reader.LazyQuotes = true

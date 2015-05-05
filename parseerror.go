@@ -11,11 +11,11 @@ import (
 )
 
 type ParseError struct {
-    filename string
-    line int
-    msg string
+	filename string
+	line     int
+	msg      string
 }
 
 func (e ParseError) Error() string {
-    return fmt.Sprintf("%s:%d - %s", e.filename, e.line, e.msg)
+	return fmt.Sprintf("%s:%d - %s", e.filename, e.line, e.msg)
 }

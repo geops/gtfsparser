@@ -7,9 +7,9 @@
 package gtfsparser
 
 import (
-	"github.com/geops/gtfsparser/gtfs"
 	"errors"
 	"fmt"
+	"github.com/geops/gtfsparser/gtfs"
 	"strconv"
 )
 
@@ -443,7 +443,7 @@ func createFareRule(r map[string]string, fareattributes *map[string]*gtfs.FareAt
 	var route_id string
 	route_id, e = getString("route_id", r, false)
 
-	if (e == nil && len(route_id) > 0) {
+	if e == nil && len(route_id) > 0 {
 		if val, ok := (*routes)[route_id]; ok {
 			rule.Route = val
 		} else {
