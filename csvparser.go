@@ -9,37 +9,31 @@ package gtfsparser
 import (
 	"encoding/csv"
 	"io"
-	"os"
 )
 
 type CsvParser struct {
 	header  []string
 	reader  *csv.Reader
-	filestr string
+	filename string
 	Curline int
 }
 
-func NewCsvParser(filestr string) (CsvParser, error) {
-	file, err := os.Open(filestr)
-	if err != nil {
-		return CsvParser{}, err
-	}
-
+func NewCsvParser(file io.Reader) (CsvParser) {
 	reader := csv.NewReader(file)
 	reader.TrimLeadingSpace = true
 	reader.LazyQuotes = true
 	reader.FieldsPerRecord = -1
-	p := CsvParser{reader: reader, filestr: filestr}
+	p := CsvParser{reader: reader, filename: "a"}
 	p.ParseHeader()
 
-	return p, nil
+	return p
 }
 
 func (p *CsvParser) ParseRecord() (map[string]string, error) {
 	l, e := p.ParseCsvLine()
 
 	if e != nil {
-		return nil, ParseError{p.filestr, p.Curline, e.Error()}
+		return nil, ParseError{p.filename, p.Curline, e.Error()}
 	}
 
 	if l == nil {

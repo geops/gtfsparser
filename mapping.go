@@ -7,9 +7,9 @@
 package gtfsparser
 
 import (
+	"github.com/geops/gtfsparser/gtfs"
 	"errors"
 	"fmt"
-	"github.com/geops/gtfsparser/gtfs"
 	"strconv"
 )
 
@@ -17,7 +17,7 @@ import (
 // error checking
 // see http://stackoverflow.com/questions/18771569/avoid-checking-if-error-is-nil-repetition
 
-func CreateAgency(r map[string]string) (*gtfs.Agency, error) {
+func createAgency(r map[string]string) (*gtfs.Agency, error) {
 	a := new(gtfs.Agency)
 	var e error
 
@@ -44,7 +44,7 @@ func CreateAgency(r map[string]string) (*gtfs.Agency, error) {
 	return a, e
 }
 
-func CreateFeedInfo(r map[string]string) (*gtfs.FeedInfo, error) {
+func createFeedInfo(r map[string]string) (*gtfs.FeedInfo, error) {
 	f := new(gtfs.FeedInfo)
 	var e error
 
@@ -73,7 +73,7 @@ func CreateFeedInfo(r map[string]string) (*gtfs.FeedInfo, error) {
 	return f, e
 }
 
-func CreateFrequency(r map[string]string, trips *map[string]*gtfs.Trip) error {
+func createFrequency(r map[string]string, trips *map[string]*gtfs.Trip) error {
 	a := new(gtfs.Frequency)
 	var e error
 
@@ -109,7 +109,7 @@ func CreateFrequency(r map[string]string, trips *map[string]*gtfs.Trip) error {
 	return e
 }
 
-func CreateRoute(r map[string]string, agencies *map[string]*gtfs.Agency) (*gtfs.Route, error) {
+func createRoute(r map[string]string, agencies *map[string]*gtfs.Agency) (*gtfs.Route, error) {
 	a := new(gtfs.Route)
 	var e error
 
@@ -160,7 +160,7 @@ func CreateRoute(r map[string]string, agencies *map[string]*gtfs.Agency) (*gtfs.
 	return a, e
 }
 
-func CreateServiceFromCalendar(r map[string]string, services *map[string]*gtfs.Service) (*gtfs.Service, error) {
+func createServiceFromCalendar(r map[string]string, services *map[string]*gtfs.Service) (*gtfs.Service, error) {
 	service := new(gtfs.Service)
 	var e error
 	service.Id, e = getString("service_id", r, true)
@@ -197,7 +197,7 @@ func CreateServiceFromCalendar(r map[string]string, services *map[string]*gtfs.S
 	return service, e
 }
 
-func CreateServiceFromCalendarDates(r map[string]string, services *map[string]*gtfs.Service) (*gtfs.Service, error) {
+func createServiceFromCalendarDates(r map[string]string, services *map[string]*gtfs.Service) (*gtfs.Service, error) {
 	update := false
 	var service *gtfs.Service
 	var e error
@@ -230,7 +230,7 @@ func CreateServiceFromCalendarDates(r map[string]string, services *map[string]*g
 	}
 }
 
-func CreateStop(r map[string]string) (*gtfs.Stop, error) {
+func createStop(r map[string]string) (*gtfs.Stop, error) {
 	a := new(gtfs.Stop)
 	var e error
 
@@ -285,7 +285,7 @@ func CreateStop(r map[string]string) (*gtfs.Stop, error) {
 	return a, e
 }
 
-func CreateStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips *map[string]*gtfs.Trip) error {
+func createStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips *map[string]*gtfs.Trip) error {
 	a := new(gtfs.StopTime)
 
 	var e error
@@ -335,7 +335,7 @@ func CreateStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips *map
 	return e
 }
 
-func CreateTrip(r map[string]string, routes *map[string]*gtfs.Route, services *map[string]*gtfs.Service) (*gtfs.Trip, error) {
+func createTrip(r map[string]string, routes *map[string]*gtfs.Route, services *map[string]*gtfs.Service) (*gtfs.Trip, error) {
 	a := new(gtfs.Trip)
 	var e error
 
@@ -388,6 +388,84 @@ func CreateTrip(r map[string]string, routes *map[string]*gtfs.Route, services *m
 	}
 
 	return a, e
+}
+
+func createFareAttribute(r map[string]string) (*gtfs.FareAttribute, error) {
+	a := new(gtfs.FareAttribute)
+	var e error
+
+	a.Id, e = getString("fare_id", r, true)
+
+	if e == nil {
+		a.Price, e = getString("price", r, false)
+	}
+
+	if e == nil {
+		a.Currency_type, e = getString("currency_type", r, true)
+	}
+
+	if e == nil {
+		a.Payment_method, e = getInt("payment_method", r, false)
+	}
+
+	if e == nil {
+		a.Transfers, e = getInt("transfers", r, true)
+	}
+
+	if e == nil {
+		a.Transfer_duration, e = getInt("transfer_duration", r, false)
+	}
+
+	return a, e
+}
+
+func createFareRule(r map[string]string, fareattributes *map[string]*gtfs.FareAttribute, routes *map[string]*gtfs.Route) error {
+	var fareattr *gtfs.FareAttribute
+	var e error
+	var fareid string
+
+	fareid, e = getString("fare_id", r, true)
+
+	if e != nil {
+		return e
+	}
+
+	// first, check if the service already exists
+	if val, ok := (*fareattributes)[fareid]; ok {
+		fareattr = val
+	} else {
+		return errors.New(fmt.Sprintf("No fare attribute with id %s found", fareid))
+	}
+
+	// create fare attribute
+	rule := new(gtfs.FareAttributeRule)
+
+	var route_id string
+	route_id, e = getString("route_id", r, false)
+
+	if (e == nil && len(route_id) > 0) {
+		if val, ok := (*routes)[route_id]; ok {
+			rule.Route = val
+		} else {
+			return errors.New(fmt.Sprintf("No route with id %s found", route_id))
+		}
+	}
+
+	if e != nil {
+		rule.Origin_id, e = getString("origin_id", r, false)
+	}
+
+	if e != nil {
+		rule.Destination_id, e = getString("destination_id", r, false)
+	}
+
+	if e != nil {
+		rule.Contains_id, e = getString("contains_id", r, false)
+	}
+
+	fareattr.Rules = append(fareattr.Rules, rule)
+
+	return nil
 }
 
 func getString(name string, r map[string]string, req bool) (string, error) {
