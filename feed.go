@@ -155,7 +155,7 @@ func (feed *Feed) parseStops(path string) error {
 	file, e := feed.getFile(path, "stops.txt")
 
 	if e != nil {
-		return errors.New("Could not open required file agency.txt")
+		return errors.New("Could not open required file stops.txt")
 	}
 
 	reader := NewCsvParser(file)
@@ -288,7 +288,7 @@ func (feed *Feed) parseStopTimes(path string) error {
 }
 
 func (feed *Feed) parseFrequencies(path string) error {
-	file, e := feed.getFile(path, "frequences.txt")
+	file, e := feed.getFile(path, "frequencies.txt")
 
 	if e != nil {
 		return nil
@@ -320,7 +320,7 @@ func (feed *Feed) parseFareAttributes(path string) error {
 		fa, e = createFareAttribute(record)
 		feed.FareAttributes[fa.Id] = fa
 		if e != nil {
-			return ParseError{"todo", reader.Curline, e.Error()}
+			return ParseError{"fare_attributes.txt", reader.Curline, e.Error()}
 		}
 	}
 
@@ -339,7 +339,7 @@ func (feed *Feed) parseFareAttributeRules(path string) error {
 	for record, e = reader.ParseRecord(); record != nil; record, e = reader.ParseRecord() {
 		e = createFareRule(record, &feed.FareAttributes, &feed.Routes)
 		if e != nil {
-			return ParseError{"todo", reader.Curline, e.Error()}
+			return ParseError{"fare_rules.txt", reader.Curline, e.Error()}
 		}
 	}
 
