@@ -12,10 +12,9 @@ import (
 )
 
 type CsvParser struct {
-	header   []string
-	reader   *csv.Reader
-	filename string
-	Curline  int
+	header  []string
+	reader  *csv.Reader
+	Curline int
 }
 
 func NewCsvParser(file io.Reader) CsvParser {
@@ -23,21 +22,17 @@ func NewCsvParser(file io.Reader) CsvParser {
 	reader.TrimLeadingSpace = true
 	reader.LazyQuotes = true
 	reader.FieldsPerRecord = -1
-	p := CsvParser{reader: reader, filename: "a"}
+	p := CsvParser{reader: reader}
 	p.ParseHeader()
 
 	return p
 }
 
-func (p *CsvParser) ParseRecord() (map[string]string, error) {
-	l, e := p.ParseCsvLine()
-
-	if e != nil {
-		return nil, ParseError{p.filename, p.Curline, e.Error()}
-	}
+func (p *CsvParser) ParseRecord() map[string]string {
+	l := p.ParseCsvLine()
 
 	if l == nil {
-		return nil, nil
+		return nil
 	}
 
 	record := make(map[string]string)
@@ -50,27 +45,22 @@ func (p *CsvParser) ParseRecord() (map[string]string, error) {
 		}
 	}
 
-	return record, nil
+	return record
 }
 
-func (p *CsvParser) ParseCsvLine() ([]string, error) {
+func (p *CsvParser) ParseCsvLine() []string {
 	record, err := p.reader.Read()
 
 	p.Curline++
 
 	if err == io.EOF {
-		return nil, nil
+		return nil
 	} else if err != nil {
-		return nil, err
+		panic(err.Error())
 	}
-	return record, nil
+	return record
 }
 
-func (p *CsvParser) ParseHeader() error {
-	var e error
-	p.header, e = p.ParseCsvLine()
-	if e != nil {
-		return e
-	}
-	return nil
+func (p *CsvParser) ParseHeader() {
+	p.header = p.ParseCsvLine()
 }
