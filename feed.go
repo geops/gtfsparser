@@ -207,7 +207,7 @@ func (feed *Feed) parseRoutes(path string) (err error) {
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var route *gtfs.Route
-		route = createRoute(record, &feed.Agencies)
+		route = createRoute(record, feed.Agencies)
 		if e != nil {
 			return ParseError{"routes.txt", reader.Curline, e.Error()}
 		}
@@ -234,7 +234,7 @@ func (feed *Feed) parseCalendar(path string) (err error) {
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var service *gtfs.Service
-		service = createServiceFromCalendar(record, &feed.Services)
+		service = createServiceFromCalendar(record, feed.Services)
 		if e != nil {
 			return ParseError{"calendar.txt", reader.Curline, e.Error()}
 		}
@@ -266,7 +266,7 @@ func (feed *Feed) parseCalendarDates(path string) (err error) {
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var service *gtfs.Service
-		service = createServiceFromCalendarDates(record, &feed.Services)
+		service = createServiceFromCalendarDates(record, feed.Services)
 
 		// if service was parsed in-place, nil was returned
 		if service != nil {
@@ -295,7 +295,7 @@ func (feed *Feed) parseTrips(path string) (err error) {
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var trip *gtfs.Trip
-		trip = createTrip(record, &feed.Routes, &feed.Services, &feed.Shapes)
+		trip = createTrip(record, feed.Routes, feed.Services, feed.Shapes)
 		feed.Trips[trip.Id] = trip
 	}
 
@@ -319,7 +319,7 @@ func (feed *Feed) parseShapes(path string) (err error) {
 
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
-		createShapePoint(record, &feed.Shapes)
+		createShapePoint(record, feed.Shapes)
 	}
 
 	return e
@@ -341,7 +341,7 @@ func (feed *Feed) parseStopTimes(path string) (err error) {
 
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
-		createStopTime(record, feed.Stops, &feed.Trips)
+		createStopTime(record, feed.Stops, feed.Trips)
 	}
 
 	return e
@@ -363,7 +363,7 @@ func (feed *Feed) parseFrequencies(path string) (err error) {
 
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
-		createFrequency(record, &feed.Trips)
+		createFrequency(record, feed.Trips)
 	}
 
 	return e
@@ -409,7 +409,7 @@ func (feed *Feed) parseFareAttributeRules(path string) (err error) {
 
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
-		createFareRule(record, &feed.FareAttributes, &feed.Routes)
+		createFareRule(record, feed.FareAttributes, feed.Routes)
 	}
 
 	return e

@@ -40,13 +40,13 @@ func createFeedInfo(r map[string]string) *gtfs.FeedInfo {
 	return f
 }
 
-func createFrequency(r map[string]string, trips *map[string]*gtfs.Trip) {
+func createFrequency(r map[string]string, trips map[string]*gtfs.Trip) {
 	a := new(gtfs.Frequency)
 	var trip *gtfs.Trip
 
 	tripid := getString("trip_id", r, true)
 
-	if val, ok := (*trips)[tripid]; ok {
+	if val, ok := trips[tripid]; ok {
 		trip = val
 	} else {
 		panic("No trip with id " + r["trip_id"] + " found.")
@@ -59,14 +59,14 @@ func createFrequency(r map[string]string, trips *map[string]*gtfs.Trip) {
 	trip.Frequencies = append(trip.Frequencies, a)
 }
 
-func createRoute(r map[string]string, agencies *map[string]*gtfs.Agency) *gtfs.Route {
+func createRoute(r map[string]string, agencies map[string]*gtfs.Agency) *gtfs.Route {
 	a := new(gtfs.Route)
 	a.Id = getString("route_id", r, true)
 
 	var aId = getString("agency_id", r, false)
 
 	if len(aId) != 0 {
-		if val, ok := (*agencies)[aId]; ok {
+		if val, ok := agencies[aId]; ok {
 			a.Agency = val
 		} else {
 			panic("No agency with id " + aId + " found.")
@@ -84,7 +84,7 @@ func createRoute(r map[string]string, agencies *map[string]*gtfs.Agency) *gtfs.R
 	return a
 }
 
-func createServiceFromCalendar(r map[string]string, services *map[string]*gtfs.Service) *gtfs.Service {
+func createServiceFromCalendar(r map[string]string, services map[string]*gtfs.Service) *gtfs.Service {
 	service := new(gtfs.Service)
 	service.Id = getString("service_id", r, true)
 
@@ -102,12 +102,12 @@ func createServiceFromCalendar(r map[string]string, services *map[string]*gtfs.S
 	return service
 }
 
-func createServiceFromCalendarDates(r map[string]string, services *map[string]*gtfs.Service) *gtfs.Service {
+func createServiceFromCalendarDates(r map[string]string, services map[string]*gtfs.Service) *gtfs.Service {
 	update := false
 	var service *gtfs.Service
 
 	// first, check if the service already exists
-	if val, ok := (*services)[r["service_id"]]; ok {
+	if val, ok := services[r["service_id"]]; ok {
 		service = val
 		update = true
 	} else {
@@ -150,11 +150,11 @@ func createStop(r map[string]string) *gtfs.Stop {
 	return a
 }
 
-func createStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips *map[string]*gtfs.Trip) {
+func createStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips map[string]*gtfs.Trip) {
 	a := new(gtfs.StopTime)
 	var trip *gtfs.Trip
 
-	if val, ok := (*trips)[getString("trip_id", r, true)]; ok {
+	if val, ok := trips[getString("trip_id", r, true)]; ok {
 		trip = val
 	} else {
 		panic("No trip with id " + getString("trip_id", r, true) + " found.")
@@ -179,14 +179,14 @@ func createStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips *map
 
 }
 
-func createTrip(r map[string]string, routes *map[string]*gtfs.Route, 
-	services *map[string]*gtfs.Service,
-	shapes *map[string]*gtfs.Shape) *gtfs.Trip {
+func createTrip(r map[string]string, routes map[string]*gtfs.Route, 
+	services map[string]*gtfs.Service,
+	shapes map[string]*gtfs.Shape) *gtfs.Trip {
 	a := new(gtfs.Trip)
 	a.Id = getString("trip_id", r, true)
 
 	if rId, ok := r["route_id"]; ok {
-		if val, ok := (*routes)[rId]; ok {
+		if val, ok := routes[rId]; ok {
 			a.Route = val
 		} else {
 			panic(fmt.Sprintf("No route with id %s found", rId))
@@ -194,7 +194,7 @@ func createTrip(r map[string]string, routes *map[string]*gtfs.Route,
 	}
 
 	if sId, ok := r["service_id"]; ok {
-		if val, ok := (*services)[sId]; ok {
+		if val, ok := services[sId]; ok {
 			a.Service = val
 		} else {
 			panic(fmt.Sprintf("No service with id %s found", sId))
@@ -209,7 +209,7 @@ func createTrip(r map[string]string, routes *map[string]*gtfs.Route,
 	shapeId := getString("shape_id", r, false)
 
     if len(shapeId) > 0 {
-		if val, ok := (*shapes)[shapeId]; ok {
+		if val, ok := shapes[shapeId]; ok {
 			a.Shape = val
 		} else {
 			panic(fmt.Sprintf("No shape with id %s found", shapeId))
@@ -222,17 +222,17 @@ func createTrip(r map[string]string, routes *map[string]*gtfs.Route,
 	return a
 }
 
-func createShapePoint(r map[string]string, shapes *map[string]*gtfs.Shape) {
+func createShapePoint(r map[string]string, shapes map[string]*gtfs.Shape) {
 	shapeId := getString("shape_id", r, true)
 	var shape *gtfs.Shape
 
-	if val, ok := (*shapes)[shapeId]; ok {
+	if val, ok := shapes[shapeId]; ok {
 		shape = val
 	} else {
 		// create new shape
 		shape = new(gtfs.Shape)
 		// push it onto the shape map
-		(*shapes)[shapeId] = shape
+		shapes[shapeId] = shape
 	}
 
 	shape.Points = append(shape.Points, &gtfs.ShapePoint{
@@ -256,14 +256,14 @@ func createFareAttribute(r map[string]string) *gtfs.FareAttribute {
 	return a
 }
 
-func createFareRule(r map[string]string, fareattributes *map[string]*gtfs.FareAttribute, routes *map[string]*gtfs.Route) {
+func createFareRule(r map[string]string, fareattributes map[string]*gtfs.FareAttribute, routes map[string]*gtfs.Route) {
 	var fareattr *gtfs.FareAttribute
 	var fareid string
 
 	fareid = getString("fare_id", r, true)
 
 	// first, check if the service already exists
-	if val, ok := (*fareattributes)[fareid]; ok {
+	if val, ok := fareattributes[fareid]; ok {
 		fareattr = val
 	} else {
 		panic(fmt.Sprintf("No fare attribute with id %s found", fareid))
@@ -276,7 +276,7 @@ func createFareRule(r map[string]string, fareattributes *map[string]*gtfs.FareAt
 	route_id = getString("route_id", r, false)
 
 	if len(route_id) > 0 {
-		if val, ok := (*routes)[route_id]; ok {
+		if val, ok := routes[route_id]; ok {
 			rule.Route = val
 		} else {
 			panic(fmt.Sprintf("No route with id %s found", route_id))
