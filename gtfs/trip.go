@@ -14,7 +14,7 @@ type Trip struct {
 	Short_name            string
 	Direction_id          int
 	Block_id              string
-	Shape_id              string
+	Shape             	  *Shape
 	Wheelchair_accessible int
 	Bikes_allowed         int
 	StopTimes             StopTimes

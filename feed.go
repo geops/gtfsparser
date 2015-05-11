@@ -23,6 +23,7 @@ type Feed struct {
 	Trips          map[string]*gtfs.Trip
 	Services       map[string]*gtfs.Service
 	FareAttributes map[string]*gtfs.FareAttribute
+	Shapes         map[string]*gtfs.Shape
 
 	zipFileCloser *zip.ReadCloser
 	curFileHandle *os.File
@@ -37,6 +38,7 @@ func NewFeed() *Feed {
 		Trips:          make(map[string]*gtfs.Trip),
 		Services:       make(map[string]*gtfs.Service),
 		FareAttributes: make(map[string]*gtfs.FareAttribute),
+		Shapes: make(map[string]*gtfs.Shape),
 	}
 	return &g
 }
@@ -48,6 +50,9 @@ func (feed *Feed) Parse(path string) error {
 	e = feed.parseAgencies(path)
 	if e == nil {
 		e = feed.parseStops(path)
+	}
+	if e == nil {
+		e = feed.parseShapes(path)
 	}
 	if e == nil {
 		e = feed.parseRoutes(path)
@@ -74,8 +79,15 @@ func (feed *Feed) Parse(path string) error {
 		e = feed.parseFrequencies(path)
 	}
 
+
+	// sort stoptimes in trips
 	for _, trip := range feed.Trips {
 		sort.Sort(trip.StopTimes)
+	}
+
+	// sort points in shapes
+	for _, shape := range feed.Shapes {
+		sort.Sort(shape.Points)
 	}
 
 	// close open readers
@@ -283,8 +295,31 @@ func (feed *Feed) parseTrips(path string) (err error) {
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var trip *gtfs.Trip
-		trip = createTrip(record, &feed.Routes, &feed.Services)
+		trip = createTrip(record, &feed.Routes, &feed.Services, &feed.Shapes)
 		feed.Trips[trip.Id] = trip
+	}
+
+	return e
+}
+
+func (feed *Feed) parseShapes(path string) (err error) {
+	file, e := feed.getFile(path, "shapes.txt")
+
+	if e != nil {
+		return nil
+	}
+
+	reader := NewCsvParser(file)
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = ParseError{"shapes.txt", reader.Curline, r.(string)}
+		}
+	}()
+
+	var record map[string]string
+	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
+		createShapePoint(record, &feed.Shapes)
 	}
 
 	return e

@@ -179,7 +179,9 @@ func createStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips *map
 
 }
 
-func createTrip(r map[string]string, routes *map[string]*gtfs.Route, services *map[string]*gtfs.Service) *gtfs.Trip {
+func createTrip(r map[string]string, routes *map[string]*gtfs.Route, 
+	services *map[string]*gtfs.Service,
+	shapes *map[string]*gtfs.Shape) *gtfs.Trip {
 	a := new(gtfs.Trip)
 	a.Id = getString("trip_id", r, true)
 
@@ -203,11 +205,42 @@ func createTrip(r map[string]string, routes *map[string]*gtfs.Route, services *m
 	a.Short_name = getString("trip_short_name", r, false)
 	a.Direction_id = getInt("direction_id", r, false)
 	a.Block_id = getString("block_id", r, false)
-	a.Shape_id = getString("shape_id", r, false)
+
+	shapeId := getString("shape_id", r, false)
+
+    if len(shapeId) > 0 {
+		if val, ok := (*shapes)[shapeId]; ok {
+			a.Shape = val
+		} else {
+			panic(fmt.Sprintf("No shape with id %s found", shapeId))
+		}
+	}
+
 	a.Wheelchair_accessible = getInt("wheelchair_accessible", r, false)
 	a.Bikes_allowed = getInt("bikes_allowed", r, false)
 
 	return a
+}
+
+func createShapePoint(r map[string]string, shapes *map[string]*gtfs.Shape) {
+	shapeId := getString("shape_id", r, true)
+	var shape *gtfs.Shape
+
+	if val, ok := (*shapes)[shapeId]; ok {
+		shape = val
+	} else {
+		// create new shape
+		shape = new(gtfs.Shape)
+		// push it onto the shape map
+		(*shapes)[shapeId] = shape
+	}
+
+	shape.Points = append(shape.Points, &gtfs.ShapePoint{
+		Lat: getFloat("shape_pt_lat", r, true),
+		Lon: getFloat("shape_pt_lon", r, true),
+		Sequence: getInt("shape_pt_sequence", r, true),
+		Dist_traveled: getFloat("shape_dist_traveled", r, false),
+	})
 }
 
 func createFareAttribute(r map[string]string) *gtfs.FareAttribute {
