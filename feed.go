@@ -38,7 +38,7 @@ func NewFeed() *Feed {
 		Trips:          make(map[string]*gtfs.Trip),
 		Services:       make(map[string]*gtfs.Service),
 		FareAttributes: make(map[string]*gtfs.FareAttribute),
-		Shapes: make(map[string]*gtfs.Shape),
+		Shapes:         make(map[string]*gtfs.Shape),
 	}
 	return &g
 }
@@ -78,7 +78,6 @@ func (feed *Feed) Parse(path string) error {
 	if e == nil {
 		e = feed.parseFrequencies(path)
 	}
-
 
 	// sort stoptimes in trips
 	for _, trip := range feed.Trips {

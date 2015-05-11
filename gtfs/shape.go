@@ -54,4 +54,3 @@ func (shapePoints ShapePoints) Less(i, j int) bool {
 func (shapePoints ShapePoints) Swap(i, j int) {
 	shapePoints[i], shapePoints[j] = shapePoints[j], shapePoints[i]
 }
-

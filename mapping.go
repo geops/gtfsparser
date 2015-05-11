@@ -179,7 +179,7 @@ func createStopTime(r map[string]string, stops map[string]*gtfs.Stop, trips map[
 
 }
 
-func createTrip(r map[string]string, routes map[string]*gtfs.Route, 
+func createTrip(r map[string]string, routes map[string]*gtfs.Route,
 	services map[string]*gtfs.Service,
 	shapes map[string]*gtfs.Shape) *gtfs.Trip {
 	a := new(gtfs.Trip)
@@ -204,7 +204,7 @@ func createTrip(r map[string]string, routes map[string]*gtfs.Route,
 
 	shapeId := getString("shape_id", r, false)
 
-    if len(shapeId) > 0 {
+	if len(shapeId) > 0 {
 		if val, ok := shapes[shapeId]; ok {
 			a.Shape = val
 		} else {
@@ -232,9 +232,9 @@ func createShapePoint(r map[string]string, shapes map[string]*gtfs.Shape) {
 	}
 
 	shape.Points = append(shape.Points, &gtfs.ShapePoint{
-		Lat: getFloat("shape_pt_lat", r, true),
-		Lon: getFloat("shape_pt_lon", r, true),
-		Sequence: getInt("shape_pt_sequence", r, true),
+		Lat:           getFloat("shape_pt_lat", r, true),
+		Lon:           getFloat("shape_pt_lon", r, true),
+		Sequence:      getInt("shape_pt_sequence", r, true),
 		Dist_traveled: getFloat("shape_dist_traveled", r, false),
 	})
 }
