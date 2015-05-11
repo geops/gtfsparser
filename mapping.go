@@ -107,12 +107,12 @@ func createServiceFromCalendarDates(r map[string]string, services map[string]*gt
 	var service *gtfs.Service
 
 	// first, check if the service already exists
-	if val, ok := services[r["service_id"]]; ok {
+	if val, ok := services[getString("service_id", r, true)]; ok {
 		service = val
 		update = true
 	} else {
 		service = new(gtfs.Service)
-		service.Id = r["service_id"]
+		service.Id = getString("service_id", r, true)
 	}
 
 	// create exception
@@ -185,20 +185,16 @@ func createTrip(r map[string]string, routes map[string]*gtfs.Route,
 	a := new(gtfs.Trip)
 	a.Id = getString("trip_id", r, true)
 
-	if rId, ok := r["route_id"]; ok {
-		if val, ok := routes[rId]; ok {
-			a.Route = val
-		} else {
-			panic(fmt.Sprintf("No route with id %s found", rId))
-		}
+	if val, ok := routes[getString("route_id", r, true)]; ok {
+		a.Route = val
+	} else {
+		panic(fmt.Sprintf("No route with id %s found", getString("route_id", r, true)))
 	}
 
-	if sId, ok := r["service_id"]; ok {
-		if val, ok := services[sId]; ok {
-			a.Service = val
-		} else {
-			panic(fmt.Sprintf("No service with id %s found", sId))
-		}
+	if val, ok := services[getString("service_id", r, true)]; ok {
+		a.Service = val
+	} else {
+		panic(fmt.Sprintf("No service with id %s found", getString("service_id", r, true)))
 	}
 
 	a.Headsign = getString("trip_headsign", r, false)
