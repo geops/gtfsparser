@@ -227,6 +227,7 @@ func createShapePoint(r map[string]string, shapes map[string]*gtfs.Shape) {
 	} else {
 		// create new shape
 		shape = new(gtfs.Shape)
+		shape.Id = shapeId
 		// push it onto the shape map
 		shapes[shapeId] = shape
 	}
