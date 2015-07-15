@@ -11,6 +11,7 @@ import (
 )
 
 type Shape struct {
+	Id     string
 	Points ShapePoints
 }
 
