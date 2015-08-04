@@ -49,7 +49,7 @@ Done, parsed 1 agencies, 9 stops, 5 routes, 11 trips, 2 fare attributes
 
 ## *Known restrictions
 
-transfers.txt parsing is missing. Validation may not be 100% complete. Tests are missing.
+Validation may not be 100% complete. Tests are missing.
 
 ## License
 

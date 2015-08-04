@@ -10,8 +10,8 @@ type FeedInfo struct {
 	Publisher_name string
 	Publisher_url  string
 	Lang           string
-	Start_date     string
-	End_date       string
+	Start_date     Date
+	End_date       Date
 	Phone          string
 	Version        string
 }

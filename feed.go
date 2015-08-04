@@ -24,6 +24,8 @@ type Feed struct {
 	Services       map[string]*gtfs.Service
 	FareAttributes map[string]*gtfs.FareAttribute
 	Shapes         map[string]*gtfs.Shape
+	Transfers      []*gtfs.Transfer
+	FeedInfos      []*gtfs.FeedInfo
 
 	zipFileCloser *zip.ReadCloser
 	curFileHandle *os.File
@@ -39,6 +41,8 @@ func NewFeed() *Feed {
 		Services:       make(map[string]*gtfs.Service),
 		FareAttributes: make(map[string]*gtfs.FareAttribute),
 		Shapes:         make(map[string]*gtfs.Shape),
+		Transfers:      make([]*gtfs.Transfer, 0),
+		FeedInfos:      make([]*gtfs.FeedInfo, 0),
 	}
 	return &g
 }
@@ -48,6 +52,9 @@ func (feed *Feed) Parse(path string) error {
 	var e error
 
 	e = feed.parseAgencies(path)
+	if e == nil {
+		e = feed.parseFeedInfos(path)
+	}
 	if e == nil {
 		e = feed.parseStops(path)
 	}
@@ -77,6 +84,9 @@ func (feed *Feed) Parse(path string) error {
 	}
 	if e == nil {
 		e = feed.parseFrequencies(path)
+	}
+	if e == nil {
+		e = feed.parseTransfers(path)
 	}
 
 	// sort stoptimes in trips
@@ -147,7 +157,7 @@ func (feed *Feed) parseAgencies(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"agency.txt", reader.Curline, r.(string)}
+			err = ParseError{"agency.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -172,7 +182,7 @@ func (feed *Feed) parseStops(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"agency.txt", reader.Curline, r.(string)}
+			err = ParseError{"stops.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -180,9 +190,6 @@ func (feed *Feed) parseStops(path string) (err error) {
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var stop *gtfs.Stop
 		stop = createStop(record)
-		if e != nil {
-			return ParseError{"stops.txt", reader.Curline, e.Error()}
-		}
 		feed.Stops[stop.Id] = stop
 	}
 	return e
@@ -199,7 +206,7 @@ func (feed *Feed) parseRoutes(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"agency.txt", reader.Curline, r.(string)}
+			err = ParseError{"routes.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -207,9 +214,6 @@ func (feed *Feed) parseRoutes(path string) (err error) {
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var route *gtfs.Route
 		route = createRoute(record, feed.Agencies)
-		if e != nil {
-			return ParseError{"routes.txt", reader.Curline, e.Error()}
-		}
 		feed.Routes[route.Id] = route
 	}
 	return e
@@ -226,7 +230,7 @@ func (feed *Feed) parseCalendar(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"agency.txt", reader.Curline, r.(string)}
+			err = ParseError{"calendar.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -234,9 +238,6 @@ func (feed *Feed) parseCalendar(path string) (err error) {
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		var service *gtfs.Service
 		service = createServiceFromCalendar(record, feed.Services)
-		if e != nil {
-			return ParseError{"calendar.txt", reader.Curline, e.Error()}
-		}
 
 		// if service was parsed in-place, nil was returned
 		if service != nil {
@@ -258,7 +259,7 @@ func (feed *Feed) parseCalendarDates(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"calendar_dates.txt", reader.Curline, r.(string)}
+			err = ParseError{"calendar_dates.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -287,7 +288,7 @@ func (feed *Feed) parseTrips(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"trips.txt", reader.Curline, r.(string)}
+			err = ParseError{"trips.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -312,7 +313,7 @@ func (feed *Feed) parseShapes(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"shapes.txt", reader.Curline, r.(string)}
+			err = ParseError{"shapes.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -334,7 +335,7 @@ func (feed *Feed) parseStopTimes(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"stop_times.txt", reader.Curline, r.(string)}
+			err = ParseError{"stop_times.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -356,7 +357,7 @@ func (feed *Feed) parseFrequencies(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"frequencies.txt", reader.Curline, r.(string)}
+			err = ParseError{"frequencies.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -378,7 +379,7 @@ func (feed *Feed) parseFareAttributes(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"fare_attributes.txt", reader.Curline, r.(string)}
+			err = ParseError{"fare_attributes.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
@@ -402,13 +403,57 @@ func (feed *Feed) parseFareAttributeRules(path string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = ParseError{"fare_rules.txt", reader.Curline, r.(string)}
+			err = ParseError{"fare_rules.txt", reader.Curline, r.(error).Error()}
 		}
 	}()
 
 	var record map[string]string
 	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
 		createFareRule(record, feed.FareAttributes, feed.Routes)
+	}
+
+	return e
+}
+
+func (feed *Feed) parseTransfers(path string) (err error) {
+	file, e := feed.getFile(path, "transfers.txt")
+
+	if e != nil {
+		return nil
+	}
+	reader := NewCsvParser(file)
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = ParseError{"transfers.txt", reader.Curline, r.(error).Error()}
+		}
+	}()
+
+	var record map[string]string
+	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
+		feed.Transfers = append(feed.Transfers, createTransfer(record, feed.Stops))
+	}
+
+	return e
+}
+
+func (feed *Feed) parseFeedInfos(path string) (err error) {
+	file, e := feed.getFile(path, "feed_info.txt")
+
+	if e != nil {
+		return nil
+	}
+	reader := NewCsvParser(file)
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = ParseError{"feed_info.txt", reader.Curline, r.(error).Error()}
+		}
+	}()
+
+	var record map[string]string
+	for record = reader.ParseRecord(); record != nil; record = reader.ParseRecord() {
+		feed.FeedInfos = append(feed.FeedInfos, createFeedInfo(record))
 	}
 
 	return e
