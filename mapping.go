@@ -247,7 +247,7 @@ func createFareAttribute(r map[string]string) *gtfs.FareAttribute {
 	a.Price = getString("price", r, false)
 	a.Currency_type = getString("currency_type", r, true)
 	a.Payment_method = getRangeInt("payment_method", r, false, 0, 1)
-	a.Transfers = getRangeInt("transfers", r, true, 0, 2)
+	a.Transfers = getRangeIntWithDefault("transfers", r, 0, 2, -1)
 	a.Transfer_duration = getInt("transfer_duration", r, false)
 
 	return a
@@ -359,6 +359,22 @@ func getRangeInt(name string, r map[string]string, req bool, min int, max int) i
 		panic(errors.New(fmt.Sprintf("Expected required field '%s'", name)))
 	}
 	return 0
+}
+
+func getRangeIntWithDefault(name string, r map[string]string, min int, max int, def int) int {
+	if val, ok := r[name]; ok && len(val) > 0 {
+		num, err := strconv.Atoi(val)
+		if err != nil {
+			panic(errors.New(fmt.Sprintf("Expected integer for field '%s', found '%s'", name, val)))
+		}
+
+		if (num > max || num < min) {
+			panic(errors.New(fmt.Sprintf("Expected integer between %d and %d for field '%s', found %s", min, max, name, val)))
+		}
+
+		return num
+	}
+	return def
 }
 
 func getFloat(name string, r map[string]string, req bool) float32 {
