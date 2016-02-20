@@ -11,6 +11,7 @@ import (
 	"github.com/geops/gtfsparser/gtfs"
 	"strconv"
 	"errors"
+	"strings"
 )
 
 func createAgency(r map[string]string) *gtfs.Agency {
@@ -379,7 +380,7 @@ func getRangeIntWithDefault(name string, r map[string]string, min int, max int, 
 
 func getFloat(name string, r map[string]string, req bool) float32 {
 	if val, ok := r[name]; ok && len(val) > 0 {
-		num, err := strconv.ParseFloat(val, 32)
+		num, err := strconv.ParseFloat(strings.TrimSpace(val), 32)
 		if err != nil {
 			panic(errors.New(fmt.Sprintf("Expected float for field '%s', found '%s'", name, val)))
 		}
