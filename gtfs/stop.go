@@ -18,5 +18,5 @@ type Stop struct {
 	Location_type       int
 	Parent_station      string
 	Timezone            string
-	Wheelchair_boarding string
+	Wheelchair_boarding int
 }

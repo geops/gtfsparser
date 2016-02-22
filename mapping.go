@@ -146,7 +146,7 @@ func createStop(r map[string]string) *gtfs.Stop {
 	a.Location_type = getRangeInt("location_type", r, false, 0, 1)
 	a.Parent_station = getString("parent_station", r, false)
 	a.Timezone = getString("stop_timezone", r, false)
-	a.Wheelchair_boarding = getString("wheelchair_boarding", r, false)
+	a.Wheelchair_boarding = getRangeIntWithDefault("wheelchair_boarding", r, 0, 2, 0)
 
 	return a
 }
@@ -213,8 +213,8 @@ func createTrip(r map[string]string, routes map[string]*gtfs.Route,
 		}
 	}
 
-	a.Wheelchair_accessible = getInt("wheelchair_accessible", r, false)
-	a.Bikes_allowed = getInt("bikes_allowed", r, false)
+	a.Wheelchair_accessible = getRangeIntWithDefault("wheelchair_accessible", r, 0, 2, 0)
+	a.Bikes_allowed = getRangeIntWithDefault("bikes_allowed", r, 0, 2, 0)
 
 	return a
 }
