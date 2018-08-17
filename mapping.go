@@ -304,7 +304,7 @@ func createTransfer(r map[string]string, stops map[string]*gtfs.Stop) *gtfs.Tran
 	}
 
 
-	a.Transfer_type = getRangeInt("transfer_type", r, true, 0, 3)
+	a.Transfer_type = getRangeInt("transfer_type", r, false, 0, 3)
 	a.Min_transfer_time = getPositiveInt("min_transfer_time", r, false)
 
 	return a
